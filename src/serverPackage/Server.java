@@ -1,12 +1,10 @@
 package serverPackage;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import operationPackage.Operation;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class Server {
     public static void main(String[] args) {
@@ -15,12 +13,11 @@ public class Server {
             System.out.println("le serveur attend la connexion d'un client");
             Socket socket = serverSocket.accept();
             System.out.println("un client est connecte");
-            BufferedReader br =new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             PrintWriter pw =new PrintWriter(socket.getOutputStream(), true);
-            Scanner scanner =new Scanner(System.in);
-            String m =br.readLine();
-            System.out.println("l'operation recu est : "+m);
-            int r=calcul(m);
+            Operation op = (Operation) ois.readObject();
+            System.out.println("l'object est recu");
+            int r=calcul(op);
             System.out.println("la resultat est = "+r);
             pw.println(r);
             System.out.println("la resultat est envoyée ");
@@ -29,19 +26,19 @@ public class Server {
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
-    public static int calcul(String m){
-        m =m.replaceAll("\\s+", "");/*pour supprimer les espaces */
-        String[] p =m.split("(?=[+\\-*/])|(?<=[+\\-*/])");
-        int a = Integer.parseInt(p[0]);
-        String o=p[1];
-        int b = Integer.parseInt(p[2]);
+    public static int calcul(Operation m){
+        char o = m.getOperateur();
+        int a=m.getA();
+        int b=m.getB();
         switch(o){
-            case "*" :return a*b;
-            case "/" :return a/b;
-            case  "+" :return a+b;
-            case  "-" :return a-b;
+            case '*' :return a*b;
+            case '/' :return a/b;
+            case  '+' :return a+b;
+            case  '-' :return a-b;
             default:return 0;
         }
     }
